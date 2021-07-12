@@ -79,13 +79,41 @@ class OwnerController {
 		return "owners/findOwners";
 	}
 
-	@GetMapping("/owners")
-	public String processFindForm(Owner owner, BindingResult result, Map<String, Object> model) {
+//	@GetMapping("/owners")
+//	public String processFindForm(Owner owner, BindingResult result, Map<String, Object> model) {
+//
+//		// allow parameterless GET request for /owners to return all records
+//		if (owner.getLastName() == null) {
+//			owner.setLastName(""); // empty string signifies broadest possible search
+//		}
+//
+//		// find owners by last name
+//		Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+//		if (results.isEmpty()) {
+//			// no owners found
+//			result.rejectValue("lastName", "notFound", "not found");
+//			return "owners/findOwners";
+//		}
+//		else if (results.size() == 1) {
+//			// 1 owner found
+//			owner = results.iterator().next();
+//			return "redirect:/owners/" + owner.getId();
+//		}
+//		else {
+//			// multiple owners found
+//			model.put("selections", results);
+//			return "owners/ownersList";
+//		}
+//	}
 
-		// allow parameterless GET request for /owners to return all records
-		if (owner.getLastName() == null) {
-			owner.setLastName(""); // empty string signifies broadest possible search
-		}
+	/*
+	 Playing around - Changed default function (above) - removed the if statement to check if lastName is
+	 null as we want the
+	 "Find Owner" to work as a find a specific owner(s) than list all owners
+	 Added error if the submit button is clicked without value
+	*/
+	@GetMapping("/owners")
+	public String processFindForm(Owner owner, BindingResult result) {
 
 		// find owners by last name
 		Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
@@ -98,12 +126,31 @@ class OwnerController {
 			// 1 owner found
 			owner = results.iterator().next();
 			return "redirect:/owners/" + owner.getId();
+		} else {
+			result.rejectValue("lastName", "cannotBeBlank", "Cannot be blank");
+			return "owners/findOwners";
 		}
-		else {
+
+	}
+
+	/*
+	 Playing around - by default all the owners are listed when "find owner" is clicked
+	 Instead, added new button to filter all new users
+	*/
+	@GetMapping("owners/all")
+	public String listAllOwners(Owner owner, Map<String, Object> model){
+		// allow parameterless GET request for /owners to return all records
+		if (owner.getLastName() == null) {
+			owner.setLastName(""); // empty string signifies broadest possible search
+		}
+
+		Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+		if (results.size() > 1) {
 			// multiple owners found
 			model.put("selections", results);
 			return "owners/ownersList";
 		}
+		return "owners/findOwners";
 	}
 
 	@GetMapping("/owners/{ownerId}/edit")
